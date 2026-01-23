@@ -109,15 +109,19 @@ def _parse_torque_power(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str], List
 
 
 def _infer_feature_types(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
-    """
-    Identify categorical vs numeric candidate columns (excluding target).
-    - categorical: object/string
-    - numeric: int/float/bool
-    """
     feature_cols = [c for c in df.columns if c != TARGET_COL]
 
-    cat_cols = [c for c in feature_cols if df[c].dtype == "object"]
-    num_cols = [c for c in feature_cols if c not in cat_cols]
+    cat_cols: List[str] = []
+    num_cols: List[str] = []
+
+    for c in feature_cols:
+        dt = df[c].dtype
+
+        # Treat pandas string/object/category as categorical
+        if pd.api.types.is_object_dtype(dt) or pd.api.types.is_string_dtype(dt) or pd.api.types.is_categorical_dtype(dt):
+            cat_cols.append(c)
+        else:
+            num_cols.append(c)
 
     return cat_cols, num_cols
 
@@ -194,6 +198,11 @@ def build_features(
 
     # Identify feature types
     cat_cols, num_cols = _infer_feature_types(df_parsed)
+
+    for c in list(num_cols):
+        if df_parsed[c].dtype == "object":
+            num_cols.remove(c)
+            cat_cols.append(c)
 
     # One-hot encode categoricals (baseline, robust)
     # Note: keep dummy_na=False because EDA indicated no missingness

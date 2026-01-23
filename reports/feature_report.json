@@ -7,30 +7,29 @@
   "target_positive_rate_all": 0.06396777717094485,
   "target_positive_rate_train": 0.0639600622959913,
   "target_positive_rate_valid": 0.06399863469579316,
-  "categorical_cols_encoded": [],
+  "categorical_cols_encoded": [
+    "region_code",
+    "segment",
+    "model",
+    "fuel_type",
+    "engine_type",
+    "rear_brakes_type",
+    "transmission_type",
+    "steering_type"
+  ],
   "numeric_cols_used": [
     "subscription_length",
     "vehicle_age",
     "customer_age",
-    "region_code",
     "region_density",
-    "segment",
-    "model",
-    "fuel_type",
-    "max_torque",
-    "max_power",
-    "engine_type",
     "airbags",
     "is_esc",
     "is_adjustable_steering",
     "is_tpms",
     "is_parking_sensors",
     "is_parking_camera",
-    "rear_brakes_type",
     "displacement",
     "cylinder",
-    "transmission_type",
-    "steering_type",
     "turning_radius",
     "length",
     "width",
@@ -59,9 +58,10 @@
     "power_value",
     "power_rpm"
   ],
-  "final_feature_count": 43,
+  "final_feature_count": 93,
   "notes": [
     "Parsed max_torque -> torque_value, torque_rpm",
-    "Parsed max_power -> power_value, power_rpm"
+    "Parsed max_power -> power_value, power_rpm",
+    "Dropped raw columns: ['max_torque', 'max_power']"
   ]
 }

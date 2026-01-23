@@ -1,0 +1,24 @@
+{
+  "dataset": "auto_insurance_claims",
+  "model_name": "xgb_v1",
+  "rows_train": 46873,
+  "rows_valid": 11719,
+  "pos_rate_train": 0.0639600622959913,
+  "pos_rate_valid": 0.06399863469579316,
+  "roc_auc": 0.650848087033154,
+  "pr_auc": 0.10148947117567099,
+  "threshold": 0.5,
+  "confusion_matrix": {
+    "tp": 469,
+    "tn": 6578,
+    "fp": 4391,
+    "fn": 281
+  },
+  "precision": 0.09650205761316873,
+  "recall": 0.6253333333333333,
+  "f1": 0.16720142602495544,
+  "notes": [
+    "XGBoost scale_pos_weight=14.635 (neg/pos).",
+    "XGB wrapper does not support early stopping arguments; trained without early stopping. Consider lowering xgb_n_estimators or upgrading xgboost."
+  ]
+}
