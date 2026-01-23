@@ -9,10 +9,10 @@ What it does:
 - Optionally uploads the canonical raw artifact + manifest to S3 (if S3_BUCKET is set)
 
 Usage:
-  python -m src.data.ingest --in_path data/raw/insurance_claims.csv
+  python -m src.data.ingest --in_path data/raw/insurance claims data.csv
 
 Optional:
-  python -m src.data.ingest --in_path data/raw/insurance_claims.csv \
+  python -m src.data.ingest --in_path data/raw/insurance claims data.csv \
     --out_path data/raw/insurance_claims.parquet \
     --manifest_path reports/ingest_manifest.json \
     --upload_s3
@@ -101,7 +101,7 @@ def build_manifest(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Ingest raw insurance dataset into canonical parquet + manifest.")
-    p.add_argument("--in_path", type=str, required=True, help="Input CSV/Parquet path (e.g., data/raw/insurance_claims.csv)")
+    p.add_argument("--in_path", type=str, required=True, help="Input CSV/Parquet path (e.g., data/raw/insurance claims data.csv)")
     p.add_argument("--out_path", type=str, default=None, help="Canonical output path (.parquet). Default: data/raw/<stem>.parquet")
     p.add_argument("--manifest_path", type=str, default=None, help="Manifest JSON path. Default: reports/ingest_manifest.json")
     p.add_argument("--upload_s3", action="store_true", help="Upload canonical artifact + manifest to S3 (requires env S3_BUCKET)")
