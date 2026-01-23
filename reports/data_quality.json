@@ -1,0 +1,112 @@
+{
+  "dataset": "auto_insurance_claims",
+  "rows_in": 58592,
+  "cols_in": 41,
+  "rows_out_clean": 58592,
+  "cols_out_clean": 41,
+  "rows_out_model": 58592,
+  "cols_out_model": 40,
+  "duplicate_rows_removed": 0,
+  "target_positive_rate": 0.06396777717094485,
+  "target_counts": {
+    "0": 54844,
+    "1": 3748
+  },
+  "yes_no_columns": [
+    "is_esc",
+    "is_adjustable_steering",
+    "is_tpms",
+    "is_parking_sensors",
+    "is_parking_camera",
+    "is_front_fog_lights",
+    "is_rear_window_wiper",
+    "is_rear_window_washer",
+    "is_rear_window_defogger",
+    "is_brake_assist",
+    "is_power_door_locks",
+    "is_central_locking",
+    "is_power_steering",
+    "is_driver_seat_height_adjustable",
+    "is_day_night_rear_view_mirror",
+    "is_ecw",
+    "is_speed_alert"
+  ],
+  "dominant_binary_columns": [
+    {
+      "column": "is_speed_alert",
+      "top_value": 1,
+      "top_pct": 0.9938046149645002
+    },
+    {
+      "column": "is_power_steering",
+      "top_value": 1,
+      "top_pct": 0.9793657837247406
+    },
+    {
+      "column": "is_parking_sensors",
+      "top_value": 1,
+      "top_pct": 0.9594995903877662
+    },
+    {
+      "column": "is_tpms",
+      "top_value": 0,
+      "top_pct": 0.7607523211359912
+    },
+    {
+      "column": "is_power_door_locks",
+      "top_value": 1,
+      "top_pct": 0.72424563080284
+    },
+    {
+      "column": "is_central_locking",
+      "top_value": 1,
+      "top_pct": 0.72424563080284
+    },
+    {
+      "column": "is_ecw",
+      "top_value": 1,
+      "top_pct": 0.72424563080284
+    },
+    {
+      "column": "is_rear_window_wiper",
+      "top_value": 0,
+      "top_pct": 0.7105748225013654
+    },
+    {
+      "column": "is_rear_window_washer",
+      "top_value": 0,
+      "top_pct": 0.7105748225013654
+    },
+    {
+      "column": "is_esc",
+      "top_value": 0,
+      "top_pct": 0.6859468869470234
+    },
+    {
+      "column": "is_rear_window_defogger",
+      "top_value": 0,
+      "top_pct": 0.6498668760240306
+    },
+    {
+      "column": "is_day_night_rear_view_mirror",
+      "top_value": 0,
+      "top_pct": 0.6196921081376298
+    },
+    {
+      "column": "is_parking_camera",
+      "top_value": 0,
+      "top_pct": 0.6093664664117968
+    },
+    {
+      "column": "is_adjustable_steering",
+      "top_value": 1,
+      "top_pct": 0.6063285090114692
+    },
+    {
+      "column": "is_driver_seat_height_adjustable",
+      "top_value": 1,
+      "top_pct": 0.585250546149645
+    }
+  ],
+  "notes": []
+}
