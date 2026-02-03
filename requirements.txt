@@ -43,3 +43,5 @@ fastapi
 uvicorn[standard]
 pydantic
 joblib
+boto3  
+mangum 

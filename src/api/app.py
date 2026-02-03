@@ -1,38 +1,39 @@
 # src/api/app.py
 """
-FastAPI service for the Insurance Quote Engine.
+FastAPI service for the Insurance Quote Engine (thin API wrapper).
 
 Endpoints:
 - GET  /health
-- POST /predict  -> returns p_claim
-- POST /quote    -> returns p_claim + pricing quote
+- POST /predict  -> returns p_claim (+ warnings)
+- POST /quote    -> returns p_claim + quote (+ warnings)
 
-Runtime flow:
-raw policy JSON -> runtime feature builder -> model.predict_proba -> quote
+The API layer stays thin:
+- validates input
+- calls src.inference.service
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
-import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from src.inference.predict import load_model
-from src.features.runtime import build_features_from_raw
-from src.pricing.quote import generate_quote
-from src.pricing.config import PricingConfig
-from typing import Optional, Union
-from pydantic import BaseModel, Field
+from src.inference.service import get_artifact, predict_from_policy, quote_from_policy_dict
 
 
 app = FastAPI(title="Insurance Quote Engine", version="0.1.0")
 
-# Load model once at startup (good for API + container)
-ARTIFACT = load_model()
+
+# Load model once at startup (better than module import-time for tests/reload)
+@app.on_event("startup")
+def _startup() -> None:
+    get_artifact()  # caches model artifact
 
 
+# -----------------------------
+# Schemas
+# -----------------------------
 class PolicyInput(BaseModel):
     # Core numeric
     subscription_length: Optional[float] = None
@@ -62,7 +63,7 @@ class PolicyInput(BaseModel):
     max_torque: Optional[str] = None
     max_power: Optional[str] = None
 
-    # Yes/No flags (accept str or bool-ish)
+    # Yes/No flags (accept bool or strings)
     is_esc: Optional[Union[bool, str]] = None
     is_adjustable_steering: Optional[Union[bool, str]] = None
     is_tpms: Optional[Union[bool, str]] = None
@@ -90,6 +91,7 @@ class PredictResponse(BaseModel):
 
 class QuoteRequest(BaseModel):
     policy: PolicyInput
+
     # Optional pricing overrides
     base_premium: Optional[float] = None
     risk_loading: Optional[float] = None
@@ -107,49 +109,39 @@ class QuoteResponse(BaseModel):
     quote: Dict[str, Any]
 
 
+# -----------------------------
+# Routes
+# -----------------------------
 @app.get("/health")
 def health() -> Dict[str, str]:
-    return {"status": "ok", "model": ARTIFACT.model_name}
-
-
-def _predict_from_policy_dict(policy_dict: Dict[str, Any]) -> PredictResponse:
-    built = build_features_from_raw(policy_dict, ARTIFACT.feature_columns)
-
-    # built.features is a 1-row DataFrame aligned to training columns
-    p_claim = float(ARTIFACT.model.predict_proba(built.features)[:, 1][0])
-
-    return PredictResponse(
-        model_name=ARTIFACT.model_name,
-        p_claim=p_claim,
-        warnings=built.warnings,
-    )
+    art = get_artifact()
+    return {"status": "ok", "model": art.model_name}
 
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(policy: PolicyInput) -> PredictResponse:
-    return _predict_from_policy_dict(policy.model_dump())
+    pred, warnings = predict_from_policy(policy.model_dump())
+    return PredictResponse(model_name=pred.model_name, p_claim=pred.p_claim, warnings=warnings)
 
 
 @app.post("/quote", response_model=QuoteResponse)
 def quote(req: QuoteRequest) -> QuoteResponse:
-    pred = _predict_from_policy_dict(req.policy.model_dump())
+    overrides = {
+        "currency": req.currency,
+        "base_premium": req.base_premium,
+        "risk_loading": req.risk_loading,
+        "min_premium": req.min_premium,
+        "max_premium": req.max_premium,
+        "tier_low": req.tier_low,
+        "tier_high": req.tier_high,
+    }
 
-    cfg = PricingConfig()
-    # Override pricing config fields if user provided them
-    cfg_dict = cfg.__dict__.copy()
+    out = quote_from_policy_dict(req.policy.model_dump(), pricing_overrides=overrides)
 
-    for k in ["currency", "base_premium", "risk_loading", "min_premium", "max_premium", "tier_low", "tier_high"]:
-        v = getattr(req, k)
-        if v is not None:
-            cfg_dict[k] = v
-
-    cfg = PricingConfig(**cfg_dict)  # type: ignore[arg-type]
-
-    q = generate_quote(pred.p_claim, cfg=cfg)
-
+    # out is a dict; ensure warnings exists (service adds it)
     return QuoteResponse(
-        model_name=pred.model_name,
-        p_claim=pred.p_claim,
-        warnings=pred.warnings,
-        quote=q.to_dict(),
+        model_name=str(out["model_name"]),
+        p_claim=float(out["p_claim"]),
+        warnings=list(out.get("warnings", [])),
+        quote=dict(out["quote"]),
     )

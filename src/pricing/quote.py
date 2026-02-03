@@ -87,4 +87,3 @@ def generate_quote(
         risk_loading=float(cfg.risk_loading),
         notes=notes,
     )
-

@@ -35,19 +35,32 @@ def load_model(model_path: Optional[str] = None) -> ModelArtifact:
     """
     Load model artifact saved by joblib.dump in src.train.train.
 
-    Expected keys:
-      - model
-      - model_name
-      - feature_columns
-      - target
+    If model_path is not provided:
+      - Use MODEL_LOCAL_PATH (default: /tmp/claim_risk_model.joblib)
+      - If file doesn't exist, download from MODEL_S3_URI
     """
     try:
         import joblib  # type: ignore
     except ImportError as e:
         raise ImportError("joblib is required for inference. Install with: pip install joblib") from e
 
-    paths = get_paths()
-    path = Path(model_path) if model_path else (paths.root / "artifacts/models/claim_risk_model.joblib")
+    # --- NEW: S3-backed local path resolution ---
+    from src.utils.model_store import (
+        ensure_model_downloaded,
+        get_aws_region,
+        get_model_local_path,
+        get_model_s3_uri,
+    )
+
+    if model_path:
+        path = Path(model_path)
+    else:
+        local_path = get_model_local_path(default_path="/tmp/claim_risk_model.joblib")
+        s3_uri = get_model_s3_uri()
+        aws_region = get_aws_region()
+        ensured = ensure_model_downloaded(model_s3_uri=s3_uri, local_path=local_path, aws_region=aws_region)
+        path = Path(ensured)
+    # ------------------------------------------
 
     obj: Dict[str, Any] = joblib.load(path)
 

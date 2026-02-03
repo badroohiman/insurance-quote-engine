@@ -1,0 +1,19 @@
+# docker/Dockerfile.lambda
+FROM public.ecr.aws/lambda/python:3.12
+
+# Keep image logs clean + faster startup
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Install deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy only source (avoid data/artifacts in image; model comes from S3)
+COPY src ./src
+
+# Lambda runs the handler object
+# This points to: src/api/lambda_handler.py -> handler = Mangum(app)
+CMD ["src.api.lambda_handler.handler"]
